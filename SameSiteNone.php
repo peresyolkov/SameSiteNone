@@ -1,4 +1,13 @@
 <?php
+/**
+* Plugin Name: SameSite = None
+* Plugin URI: https://github.com/peresyolkov/SameSiteNone
+* Description: Owerwrites wp_set_auth_cookie to use Secure = true and SameSite = 'None' cookies attributes. Uses setcookie function with options array. Please note: an alternative signature supporting an options array has been added starting PHP 7.3.0.
+* Version: 1.0
+* Author: Yuriy Peresyolkov
+* Author URI: linkedin.com/in/yuriy-peresyolkov-96b53228
+**/
+
 if ( ! function_exists( 'wp_set_auth_cookie' ) ) :
 	/**
 	 * Sets the authentication cookies based on user ID.
@@ -129,11 +138,22 @@ if ( ! function_exists( 'wp_set_auth_cookie' ) ) :
 			return;
 		}
 
-		setcookie( $auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN, $secure, true );
-		setcookie( $auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, $secure, true );
-		setcookie( LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true );
+		setcookie_samesite_none( $auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN, $secure, true );
+		setcookie_samesite_none( $auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, $secure, true );
+		setcookie_samesite_none( LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true );
 		if ( COOKIEPATH != SITECOOKIEPATH ) {
-			setcookie( LOGGED_IN_COOKIE, $logged_in_cookie, $expire, SITECOOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true );
+			setcookie_samesite_none( LOGGED_IN_COOKIE, $logged_in_cookie, $expire, SITECOOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true );
 		}
 	}
 endif;
+
+function setcookie_samesite_none($name, $value, $expire, $cookie_path, $cookie_domain, $secure, $httponly) {
+	setcookie($name, $value, array (
+                'expires' => $expire,
+                'path' => $cookie_path,
+                'domain' => $cookie_domain,
+                'secure' => true,
+                'httponly' => $httponly,
+                'samesite' => 'None'
+    )); 
+}
